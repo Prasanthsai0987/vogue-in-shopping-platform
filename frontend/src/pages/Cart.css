@@ -1,0 +1,176 @@
+.cart-page {
+  padding: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.cart-empty {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.empty-icon { font-size: 56px; margin-bottom: 16px; }
+
+.cart-empty h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #1a1a1a;
+}
+
+.cart-empty p { font-size: 14px; color: #999; margin-bottom: 24px; }
+
+.back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #999;
+  padding: 0;
+  margin-bottom: 20px;
+  transition: color 0.15s;
+}
+
+.back-btn:hover { color: #1a1a1a; }
+
+.cart-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 24px;
+}
+
+.cart-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 720px) {
+  .cart-layout { grid-template-columns: 1fr; }
+}
+
+.cart-items { display: flex; flex-direction: column; gap: 12px; }
+
+.cart-item {
+  background: #fff;
+  border: 1px solid #f0eaea;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cart-item-img {
+  width: 68px;
+  height: 68px;
+  background: #fdf5f7;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.cart-item-info { flex: 1; min-width: 0; }
+
+.cart-item-brand { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.8px; }
+
+.cart-item-name { font-size: 14px; font-weight: 600; color: #1a1a1a; margin: 2px 0 4px; }
+
+.cart-item-meta { font-size: 12px; color: #999; }
+
+.cart-item-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.cart-item-price { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+
+.remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #ccc;
+  font-size: 14px;
+  transition: color 0.15s;
+  padding: 2px;
+}
+
+.remove-btn:hover { color: #e24b4a; }
+
+/* Order Summary */
+.order-summary {
+  background: #fff;
+  border: 1px solid #f0eaea;
+  border-radius: 14px;
+  padding: 20px;
+  position: sticky;
+  top: 80px;
+}
+
+.summary-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+}
+
+.summary-rows { margin-bottom: 12px; }
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.free-tag { color: #3b6d11; font-weight: 600; }
+
+.free-ship-hint {
+  font-size: 11px;
+  color: #d4537e;
+  margin-top: -4px;
+  margin-bottom: 8px;
+}
+
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 700;
+  border-top: 1px solid #f0eaea;
+  padding-top: 14px;
+  margin-top: 4px;
+  color: #1a1a1a;
+}
+
+.btn-primary {
+  background: #d4537e;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 15px;
+  cursor: pointer;
+  font-weight: 600;
+  width: 100%;
+  transition: background 0.15s;
+}
+
+.btn-primary:hover { background: #993556; }
+
+.checkout-btn { margin-top: 16px; }
+
+.secure-note {
+  text-align: center;
+  font-size: 11px;
+  color: #bbb;
+  margin-top: 10px;
+}

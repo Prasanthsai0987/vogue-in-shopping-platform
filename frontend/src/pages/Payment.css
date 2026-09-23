@@ -1,0 +1,228 @@
+.payment-page {
+  padding: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #999;
+  padding: 0;
+  margin-bottom: 20px;
+  transition: color 0.15s;
+}
+
+.back-btn:hover { color: #1a1a1a; }
+
+.payment-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 24px;
+}
+
+.payment-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 720px) {
+  .payment-layout { grid-template-columns: 1fr; }
+}
+
+.payment-main { display: flex; flex-direction: column; gap: 16px; }
+
+.amount-card {
+  background: linear-gradient(135deg, #d4537e 0%, #993556 100%);
+  border-radius: 14px;
+  padding: 20px 24px;
+  color: #fff;
+}
+
+.amount-label { font-size: 12px; opacity: 0.8; margin-bottom: 6px; }
+
+.amount-value { font-size: 32px; font-weight: 700; }
+
+.amount-items { font-size: 12px; opacity: 0.7; margin-top: 4px; }
+
+.section-card {
+  background: #fff;
+  border: 1px solid #f0eaea;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.section-sub {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 16px;
+}
+
+.upi-apps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.upi-app-btn {
+  border: 1px solid #f0eaea;
+  border-radius: 12px;
+  padding: 14px 8px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  transition: all 0.15s;
+}
+
+.upi-app-btn:hover { border-color: #d4537e; background: #fdf5f7; }
+
+.upi-app-btn.selected {
+  border-color: #d4537e;
+  background: #fbeaf0;
+  box-shadow: 0 0 0 2px rgba(212, 83, 126, 0.15);
+}
+
+.upi-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.upi-name { font-size: 11px; font-weight: 600; color: #1a1a1a; text-align: center; }
+
+.upi-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  background: #d4537e;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.qr-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.qr-frame {
+  border: 1px solid #f0eaea;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+}
+
+.qr-hint { font-size: 12px; color: #999; text-align: center; }
+
+/* Sidebar */
+.payment-sidebar {
+  background: #fff;
+  border: 1px solid #f0eaea;
+  border-radius: 14px;
+  padding: 20px;
+  position: sticky;
+  top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f8f4f5;
+}
+
+.sidebar-emoji {
+  font-size: 28px;
+  width: 42px;
+  height: 42px;
+  background: #fdf5f7;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar-info { flex: 1; min-width: 0; }
+
+.sidebar-name { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+
+.sidebar-meta { font-size: 11px; color: #999; margin-top: 2px; }
+
+.sidebar-price { font-size: 13px; font-weight: 700; color: #1a1a1a; white-space: nowrap; }
+
+.sidebar-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  padding-top: 4px;
+}
+
+.pay-btn {
+  background: #d4537e;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 600;
+  width: 100%;
+  transition: background 0.15s;
+  margin-top: 4px;
+}
+
+.pay-btn:hover:not(.disabled) { background: #993556; }
+
+.pay-btn.disabled {
+  background: #f4c0d1;
+  cursor: not-allowed;
+}
+
+.pay-btn.processing {
+  background: #888;
+  cursor: not-allowed;
+}
+
+.pay-hint {
+  font-size: 11px;
+  color: #bbb;
+  text-align: center;
+  margin-top: -4px;
+}

@@ -1,0 +1,152 @@
+.profile-page {
+  min-height: 100vh;
+  padding: 40px 20px;
+  background: #f8f8f8;
+}
+
+.profile-container {
+  max-width: 700px;
+  margin: 0 auto;
+  background: white;
+  padding: 35px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.profile-title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.profile-subtitle {
+  margin-top: 8px;
+  margin-bottom: 30px;
+  color: #777;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #222;
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.save-profile-btn {
+  margin-top: 10px;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  background: #111;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.save-profile-btn:hover {
+  background: #333;
+}
+
+.save-profile-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.profile-success {
+  padding: 12px;
+  border-radius: 8px;
+  background: #e8f7e8;
+  color: #267326;
+}
+
+.profile-error {
+  padding: 12px;
+  border-radius: 8px;
+  background: #ffe8e8;
+  color: #b32626;
+}
+
+@media (max-width: 600px) {
+  .profile-container {
+    padding: 25px 20px;
+  }
+
+  .profile-title {
+    font-size: 26px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+.profile-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.new-profile-btn,
+.logout-btn {
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.new-profile-btn {
+  border: 1px solid #111;
+  background: #111;
+  color: white;
+}
+
+.new-profile-btn:hover {
+  opacity: 0.85;
+}
+
+.logout-btn {
+  border: 1px solid #ccc;
+  background: white;
+  color: #d00000;
+}
+
+.logout-btn:hover {
+  background: #fff5f5;
+}

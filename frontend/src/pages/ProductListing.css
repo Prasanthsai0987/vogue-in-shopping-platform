@@ -1,0 +1,67 @@
+.listing-page {
+  padding: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.listing-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.listing-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.listing-sub {
+  font-size: 13px;
+  color: #999;
+}
+
+.filter-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  background: #fff;
+  border: 1px solid #e8e0e0;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.15s;
+}
+
+.filter-chip:hover {
+  border-color: #d4537e;
+  color: #d4537e;
+}
+
+.filter-chip.active {
+  background: #fbeaf0;
+  border-color: #d4537e;
+  color: #d4537e;
+  font-weight: 600;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 18px;
+}
+
+.loading {
+  text-align: center;
+  padding: 60px;
+  color: #999;
+  font-size: 14px;
+}
