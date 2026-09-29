@@ -13,6 +13,7 @@ import java.util.List;
         origins = {
                 "http://localhost:5173",
                 "http://localhost:3000",
+                "https://vogue-in-shopping-platform-59hh92uvy-prasanthsai0987s-projects.vercel.app",
                 "https://*.vercel.app"
         },
         methods = {
