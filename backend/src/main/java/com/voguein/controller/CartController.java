@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
                 "http://localhost:5173",
                 "http://localhost:3000",
                 "https://vogue-in-shopping-platform-59hh92uvy-prasanthsai0987s-projects.vercel.app",
-                "https://*.vercel.app"
+                "https://vogue-in-shopping-platform-two.vercel.app"
         },
         methods = {
                 RequestMethod.GET,
