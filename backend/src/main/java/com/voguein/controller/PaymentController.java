@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
         origins = {
                 "http://localhost:5173",
                 "http://localhost:3000",
-                "https://vogue-in-shopping-platform-ef8y54uvj-prasanthsai0987s-projects.vercel.app"
+                "https://*.vercel.app"
         }
 )
 public class PaymentController {
