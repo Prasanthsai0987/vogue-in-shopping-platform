@@ -1,0 +1,272 @@
+.admin-page {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 36px 24px 72px;
+  color: #25221f;
+  background: #faf9f6;
+  min-height: 100vh;
+}
+
+.admin-header,
+.admin-inventory-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.admin-header {
+  margin-bottom: 28px;
+}
+
+.admin-header h1 {
+  margin: 4px 0 8px;
+  font-size: clamp(28px, 4vw, 40px);
+}
+
+.admin-header p,
+.admin-inventory-header p {
+  color: #77716b;
+  margin: 0;
+}
+
+.admin-eyebrow {
+  font-size: 12px;
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+
+.admin-panel {
+  background: #fff;
+  border: 1px solid #e8e3dc;
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 26px;
+  box-shadow: 0 5px 24px rgb(30 20 10 / 4%);
+}
+
+.admin-panel h2 {
+  font-size: 21px;
+  margin: 0 0 20px;
+}
+
+.admin-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.admin-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-form input,
+.admin-form textarea,
+.admin-search {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #ded8d0;
+  border-radius: 8px;
+  padding: 12px 13px;
+  background: #fff;
+  color: #25221f;
+  font: inherit;
+  font-size: 14px;
+}
+
+.admin-form input:focus,
+.admin-form textarea:focus,
+.admin-search:focus {
+  outline: 2px solid #b79b73;
+  outline-offset: 1px;
+}
+
+.admin-form textarea {
+  resize: vertical;
+}
+
+.admin-full-width {
+  grid-column: 1 / -1;
+}
+
+.admin-form-actions,
+.admin-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-primary-button,
+.admin-secondary-button {
+  border: 1px solid #28231f;
+  border-radius: 8px;
+  padding: 11px 17px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+
+.admin-primary-button {
+  background: #28231f;
+  color: #fff;
+}
+
+.admin-secondary-button {
+  background: #fff;
+  color: #28231f;
+}
+
+.admin-primary-button:disabled,
+.admin-secondary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.admin-alert {
+  border-radius: 8px;
+  padding: 13px 16px;
+  margin-bottom: 18px;
+  font-size: 14px;
+}
+
+.admin-error {
+  color: #8e2222;
+  background: #fff0f0;
+  border: 1px solid #f0caca;
+}
+
+.admin-success {
+  color: #216a40;
+  background: #edf9f0;
+  border: 1px solid #c9ebd1;
+}
+
+.admin-image-preview img {
+  max-width: 180px;
+  max-height: 180px;
+  object-fit: contain;
+  border: 1px solid #e8e3dc;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+.admin-inventory-header {
+  margin-bottom: 20px;
+}
+
+.admin-search {
+  max-width: 280px;
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 14px 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee9e3;
+  white-space: nowrap;
+}
+
+.admin-table th {
+  color: #706960;
+  background: #faf8f5;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.admin-product-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 210px;
+}
+
+.admin-product-cell img,
+.admin-emoji {
+  width: 48px;
+  height: 54px;
+  border-radius: 7px;
+  object-fit: cover;
+  background: #f2eee8;
+  flex-shrink: 0;
+}
+
+.admin-emoji {
+  display: grid;
+  place-items: center;
+  font-size: 25px;
+}
+
+.admin-product-cell strong,
+.admin-product-cell small {
+  display: block;
+}
+
+.admin-product-cell small {
+  margin-top: 5px;
+  color: #817a72;
+}
+
+.admin-row-actions button {
+  background: transparent;
+  border: 1px solid #ded8d0;
+  border-radius: 6px;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+
+.admin-row-actions .admin-delete {
+  color: #a32929;
+  border-color: #e8caca;
+}
+
+.admin-stock {
+  display: inline-block;
+  background: #eaf5ed;
+  color: #23683c;
+  border-radius: 20px;
+  padding: 5px 9px;
+}
+
+.admin-stock.admin-out {
+  background: #fff0f0;
+  color: #a32929;
+}
+
+@media (max-width: 650px) {
+  .admin-page {
+    padding: 22px 12px 48px;
+  }
+
+  .admin-panel {
+    padding: 16px;
+  }
+
+  .admin-form {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-full-width {
+    grid-column: auto;
+  }
+
+  .admin-search {
+    max-width: none;
+  }
+}

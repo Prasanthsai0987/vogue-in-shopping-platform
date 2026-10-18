@@ -1,567 +1,372 @@
+
 import { useEffect, useState } from "react";
 import {
-  createCustomer,
-  getCustomer,
-  updateCustomer
+  getCurrentCustomer,
+  updateCustomer,
+  logoutCustomer,
 } from "../api";
 import "./Profile.css";
 
-export default function Profile({ onLogout, onLogin }) {
+const emptyProfile = {
+  name: "",
+  email: "",
+  phone: "",
+  shippingAddress: "",
+  city: "",
+  state: "",
+  pincode: "",
+};
 
-  const [customerId, setCustomerId] = useState(
-    localStorage.getItem("customerId")
-  );
-
-  const [isNewProfile, setIsNewProfile] = useState(false);
-
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    shippingAddress: "",
-    city: "",
-    state: "",
-    pincode: "",
-    passkey: ""
-  });
-
-  const [loading, setLoading] = useState(false);
+export default function Profile({ onLogout }) {
+  const [customerId, setCustomerId] = useState(null);
+  const [formData, setFormData] = useState(emptyProfile);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-
-  // --------------------------------------------------
-  // Load logged-in customer's profile
-  // --------------------------------------------------
-
   useEffect(() => {
+    let cancelled = false;
 
     const loadProfile = async () => {
-
-      // If user selected New Profile,
-      // don't load the old customer
-      if (isNewProfile) {
-        return;
-      }
-
-      // No customer logged in
-      if (!customerId) {
-        return;
-      }
+      setLoading(true);
+      setError("");
 
       try {
+        // Get the customer associated with the server session.
+        const response = await getCurrentCustomer();
+        const customer = response?.data;
 
-        const response = await getCustomer(customerId);
+        if (!customer?.id) {
+          throw new Error("Customer profile was not returned.");
+        }
 
-        const customer = response?.data ?? response;
+        if (cancelled) return;
+
+        setCustomerId(customer.id);
+
+        // Retain compatibility with existing components.
+        localStorage.setItem("customerId", customer.id);
 
         setFormData({
-          name: customer.name || "",
-          email: customer.email || "",
-          phone: customer.phone || "",
-          shippingAddress: customer.shippingAddress || "",
-          city: customer.city || "",
-          state: customer.state || "",
-          pincode: customer.pincode || "",
-          passkey: customer.passkey || ""
+          name: customer.name ?? "",
+          email: customer.email ?? "",
+          phone: customer.phone ?? "",
+          shippingAddress: customer.shippingAddress ?? "",
+          city: customer.city ?? "",
+          state: customer.state ?? "",
+          pincode: customer.pincode ?? "",
         });
-
       } catch (err) {
+        console.error(
+          "Failed to restore customer profile:",
+          err
+        );
 
-        console.error("Failed to load profile:", err);
-
-        setError("Could not load your profile.");
-
+        if (!cancelled) {
+          setCustomerId(null);
+          setFormData(emptyProfile);
+          setError(
+            err.response?.status === 401
+              ? "Your session has expired. Please log in again."
+              : err.response?.data?.message ||
+                "Could not load your profile. Please try again."
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
-
     };
 
     loadProfile();
 
-  }, [customerId, isNewProfile]);
-
-
-  // --------------------------------------------------
-  // Handle input changes
-  // --------------------------------------------------
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleChange = (e) => {
-
     const { name, value } = e.target;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value
+    setFormData((previous) => ({
+      ...previous,
+      [name]: value,
     }));
-
-  };
-
-
-  // --------------------------------------------------
-  // Create NEW profile
-  // --------------------------------------------------
-
-  const handleNewProfile = () => {
-
-    // Remove old logged-in customer
-    localStorage.removeItem("customerId");
-
-    // Switch to new profile mode
-    setIsNewProfile(true);
-
-    setCustomerId(null);
-
-    // Clear form
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      shippingAddress: "",
-      city: "",
-      state: "",
-      pincode: "",
-      passkey: ""
-    });
 
     setMessage("");
     setError("");
-
   };
 
-
-  // --------------------------------------------------
-  // Save / Update profile
-  // --------------------------------------------------
-
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
-    setLoading(true);
+    if (!customerId) {
+      setError("Please log in before updating your profile.");
+      return;
+    }
+
+    const name = formData.name.trim();
+
+    if (!name) {
+      setError("Name cannot be empty.");
+      return;
+    }
+
+    setSaving(true);
     setMessage("");
     setError("");
 
     try {
+      // Do not send email or password in the profile update.
+      const payload = {
+        name,
+        phone: formData.phone,
+        shippingAddress: formData.shippingAddress,
+        city: formData.city,
+        state: formData.state,
+        pincode: formData.pincode,
+      };
 
-      let response;
-
-      // ----------------------------------------------
-      // NEW PROFILE
-      // ----------------------------------------------
-
-      if (isNewProfile || !customerId) {
-
-        response = await createCustomer(formData);
-
-      }
-
-      // ----------------------------------------------
-      // EXISTING PROFILE
-      // ----------------------------------------------
-
-      else {
-
-        response = await updateCustomer(
-          customerId,
-          formData
-        );
-
-      }
-
-      const customer = response?.data ?? response;
-
-      console.log("CUSTOMER RESPONSE:", customer);
-
-      if (!customer?.id) {
-
-        throw new Error(
-          "Customer ID was not returned by backend"
-        );
-
-      }
-
-      // Save current customer ID
-      localStorage.setItem(
-        "customerId",
-        customer.id
+      const response = await updateCustomer(
+        customerId,
+        payload
       );
 
-      setCustomerId(customer.id);
+      const customer = response?.data;
 
-      // No longer in new profile mode
-      setIsNewProfile(false);
+      setFormData((previous) => ({
+        ...previous,
+        name: customer?.name ?? previous.name,
+        email: customer?.email ?? previous.email,
+        phone: customer?.phone ?? previous.phone,
+        shippingAddress:
+          customer?.shippingAddress ??
+          previous.shippingAddress,
+        city: customer?.city ?? previous.city,
+        state: customer?.state ?? previous.state,
+        pincode: customer?.pincode ?? previous.pincode,
+      }));
 
-      // Success message
-      setMessage(
-        isNewProfile || !customerId
-          ? "Profile created successfully."
-          : "Profile updated successfully."
-      );
-
+      setMessage("Profile updated successfully.");
     } catch (err) {
-
-      console.error("PROFILE ERROR:", err);
-
-      if (err.response) {
-
-        console.error(
-          "Backend status:",
-          err.response.status
-        );
-
-        console.error(
-          "Backend data:",
-          err.response.data
-        );
-
-      }
-
-      setError(
-        err.response?.data?.message ||
-        "Failed to save profile. Please try again."
+      console.error(
+        "PROFILE UPDATE ERROR:",
+        err,
+        err.response?.data
       );
 
+      if (err.response?.status === 401) {
+        setError("Your session has expired. Please log in again.");
+      } else if (err.response?.status === 403) {
+        setError(
+          "You are not authorized to update this profile."
+        );
+      } else {
+        setError(
+          err.response?.data?.message ||
+            "Failed to update your profile. Please try again."
+        );
+      }
     } finally {
-
-      setLoading(false);
-
+      setSaving(false);
     }
-
   };
 
-
-  // --------------------------------------------------
-  // Logout
-  // --------------------------------------------------
-
-  const handleLogout = () => {
-
-    // Remove logged-in customer
-    localStorage.removeItem("customerId");
-
-    setCustomerId(null);
-
-    setIsNewProfile(false);
-
-    // Clear form
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      shippingAddress: "",
-      city: "",
-      state: "",
-      pincode: "",
-      passkey: ""
-    });
-
-    setMessage("");
+  const handleLogout = async () => {
+    setLoggingOut(true);
     setError("");
 
-    // Redirect to Login.jsx
-    if (onLogout) {
-      onLogout();
+    try {
+      // App handles the server logout and navigation.
+      // Avoid sending the logout request twice.
+      if (onLogout) {
+        await onLogout();
+      } else {
+        await logoutCustomer();
+        localStorage.removeItem("customerId");
+        setCustomerId(null);
+        setFormData(emptyProfile);
+      }
+    } catch (err) {
+      console.error("PROFILE LOGOUT ERROR:", err);
+      setError("Logout failed. Please try again.");
+    } finally {
+      setLoggingOut(false);
     }
-
   };
 
+  if (loading) {
+    return (
+      <div className="profile-page">
+        <div className="profile-container">
+          <p>Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
 
-  // --------------------------------------------------
-  // Go to Login for existing account
-  // --------------------------------------------------
-
-  const handleExistingLogin = () => {
-
-    // Make sure new-profile state is cleared
-    setIsNewProfile(false);
-
-    setCustomerId(null);
-
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      shippingAddress: "",
-      city: "",
-      state: "",
-      pincode: "",
-      passkey: ""
-    });
-
-    setMessage("");
-    setError("");
-
-    // Redirect to Login.jsx
-    if (onLogin) {
-      onLogin();
-    }
-
-  };
-
+  if (!customerId) {
+    return (
+      <div className="profile-page">
+        <div className="profile-container">
+          <h1 className="profile-title">My Profile</h1>
+          <p className="profile-error" role="alert">
+            {error || "Please log in to view your profile."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-
     <div className="profile-page">
-
       <div className="profile-container">
-
-        <h1 className="profile-title">
-          My Profile
-        </h1>
+        <h1 className="profile-title">My Profile</h1>
 
         <p className="profile-subtitle">
-          Manage your personal information and shipping address
+          Manage your personal information and shipping address.
+          You can update your profile whenever you need.
         </p>
 
-
-        {/* ------------------------------------------------ */}
-        {/* Top buttons                                      */}
-        {/* ------------------------------------------------ */}
-
         <div className="profile-actions">
-
-          {/* New Profile button */}
-
           <button
             type="button"
-            className="new-profile-btn"
-            onClick={handleNewProfile}
+            className="logout-btn"
+            onClick={handleLogout}
+            disabled={loggingOut}
           >
-            + New Profile
+            {loggingOut ? "Logging out..." : "Logout"}
           </button>
-
-
-          {/* Existing Account Login button */}
-
-          {isNewProfile && (
-
-            <button
-              type="button"
-              className="login-existing-btn"
-              onClick={handleExistingLogin}
-            >
-              Existing Account? Login
-            </button>
-
-          )}
-
-
-          {/* Logout button */}
-
-          {customerId && !isNewProfile && (
-
-            <button
-              type="button"
-              className="logout-btn"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
-
-          )}
-
         </div>
 
+        {error && (
+          <div className="profile-error" role="alert">
+            {error}
+          </div>
+        )}
 
-        {/* ------------------------------------------------ */}
-        {/* Profile form                                    */}
-        {/* ------------------------------------------------ */}
-
-        <form
-          className="profile-form"
-          onSubmit={handleSubmit}
-        >
-
-
-          {/* Name */}
-
+        <form className="profile-form" onSubmit={handleSubmit}>
           <div className="form-group">
-
-            <label>Name</label>
-
+            <label htmlFor="profile-name">Full Name</label>
             <input
+              id="profile-name"
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
               placeholder="Enter your name"
+              autoComplete="name"
               required
+              disabled={saving}
             />
-
           </div>
 
-
-          {/* Email */}
-
           <div className="form-group">
-
-            <label>Email</label>
-
+            <label htmlFor="profile-email">Email</label>
             <input
+              id="profile-email"
               type="email"
               name="email"
               value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter your email"
-              required
+              readOnly
+              autoComplete="email"
             />
-
+            <small>Email cannot be changed from this form.</small>
           </div>
 
-
-          {/* Phone */}
-
           <div className="form-group">
-
-            <label>Phone</label>
-
+            <label htmlFor="profile-phone">Phone</label>
             <input
+              id="profile-phone"
               type="tel"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
               placeholder="Enter your phone number"
-              required
+              autoComplete="tel"
+              disabled={saving}
             />
-
           </div>
 
-
-          {/* Shipping Address */}
-
           <div className="form-group">
-
-            <label>Shipping Address</label>
-
+            <label htmlFor="profile-address">
+              Shipping Address
+            </label>
             <textarea
+              id="profile-address"
               name="shippingAddress"
               value={formData.shippingAddress}
               onChange={handleChange}
               placeholder="Enter your shipping address"
-              rows="3"
-              required
+              rows={3}
+              autoComplete="street-address"
+              disabled={saving}
             />
-
           </div>
 
-
-          {/* City + State */}
-
           <div className="form-row">
-
             <div className="form-group">
-
-              <label>City</label>
-
+              <label htmlFor="profile-city">City</label>
               <input
+                id="profile-city"
                 type="text"
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
                 placeholder="Enter city"
-                required
+                autoComplete="address-level2"
+                disabled={saving}
               />
-
             </div>
 
-
             <div className="form-group">
-
-              <label>State</label>
-
+              <label htmlFor="profile-state">State</label>
               <input
+                id="profile-state"
                 type="text"
                 name="state"
                 value={formData.state}
                 onChange={handleChange}
                 placeholder="Enter state"
-                required
+                autoComplete="address-level1"
+                disabled={saving}
               />
-
             </div>
-
           </div>
 
-
-          {/* Pincode */}
-
           <div className="form-group">
-
-            <label>Pincode</label>
-
+            <label htmlFor="profile-pincode">Pincode</label>
             <input
+              id="profile-pincode"
               type="text"
               name="pincode"
               value={formData.pincode}
               onChange={handleChange}
               placeholder="Enter pincode"
-              maxLength="6"
-              required
+              maxLength={6}
+              autoComplete="postal-code"
+              disabled={saving}
             />
-
           </div>
-
-
-          {/* Passkey */}
-
-          <div className="form-group">
-
-            <label>Passkey</label>
-
-            <input
-              type="password"
-              name="passkey"
-              value={formData.passkey}
-              onChange={handleChange}
-              placeholder="Enter your passkey"
-              required={isNewProfile || !customerId}
-            />
-
-          </div>
-
-
-          {/* Messages */}
 
           {message && (
-
-            <div className="profile-success">
+            <div className="profile-success" role="status">
               {message}
             </div>
-
           )}
-
-          {error && (
-
-            <div className="profile-error">
-              {error}
-            </div>
-
-          )}
-
-
-          {/* Save button */}
 
           <button
             type="submit"
             className="save-profile-btn"
-            disabled={loading}
+            disabled={saving}
           >
-
-            {loading
-              ? "Saving..."
-              : isNewProfile || !customerId
-              ? "Create Profile"
-              : "Update Profile"
-            }
-
+            {saving ? "Saving..." : "Save Changes"}
           </button>
-
         </form>
-
       </div>
-
     </div>
-
   );
-
 }

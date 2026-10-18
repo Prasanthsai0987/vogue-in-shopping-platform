@@ -121,8 +121,14 @@ const [loading, setLoading] = useState(false);
 
 
                 return {
-
                   ...product,
+
+                  // Keep the product image and other product fields
+                  imageUrl:
+                    product.imageUrl ||
+                    product.image ||
+                    product.imageURL ||
+                    "",
 
                   // Keep cart information
                   productId: item.productId,
@@ -130,7 +136,6 @@ const [loading, setLoading] = useState(false);
                   qty: Number(item.qty || 1),
 
                   size: item.size
-
                 };
 
 
@@ -612,14 +617,19 @@ const setSingleItem = (
   size,
   qty = 1
 ) => {
-
   setBuyNowItem({
     ...product,
+
+    imageUrl:
+      product.imageUrl ||
+      product.image ||
+      product.imageURL ||
+      "",
+
     productId: product.id,
     qty: Number(qty),
-    size: size
+    size
   });
-
 };
 
 

@@ -600,9 +600,18 @@ if (!customer || !customer.id) {
 
 
                     <div className="summary-image">
-
-                      {item.emoji || "👕"}
-
+                      {item.imageUrl ? (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name || "Product"}
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        item.emoji || "👕"
+                      )}
                     </div>
 
 

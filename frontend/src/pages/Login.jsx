@@ -1,46 +1,95 @@
+
 import { useState } from "react";
-import { loginCustomer } from "../api";
+import { loginCustomer, registerCustomer } from "../api";
 import "./Login.css";
 
 export default function Login({ onLogin }) {
+  const [mode, setMode] = useState("login");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [passkey, setPasskey] = useState("");
-
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const handleLogin = async (e) => {
+  const switchMode = (nextMode) => {
+    setMode(nextMode);
+    setError("");
+    setSuccess("");
+    setPassword("");
+    setConfirmPassword("");
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
     setLoading(true);
     setError("");
+    setSuccess("");
 
     try {
-      const response = await loginCustomer(email, passkey);
+      if (mode === "signup") {
+        if (password.length < 8) {
+          setError("Password must be at least 8 characters.");
+          return;
+        }
 
-      const customer = response?.data ?? response;
+        if (password !== confirmPassword) {
+          setError("Passwords do not match.");
+          return;
+        }
+
+        await registerCustomer({
+          name: name.trim(),
+          email: email.trim(),
+          password,
+        });
+
+        setMode("login");
+        setPassword("");
+        setConfirmPassword("");
+        setName("");
+        setSuccess("Account created successfully. Please log in.");
+        return;
+      }
+
+      const response = await loginCustomer(email.trim(), password);
+      const customer = response?.data;
 
       if (!customer?.id) {
-        throw new Error("Customer ID not returned");
+        throw new Error(
+          "The login response did not contain a customer ID."
+        );
       }
 
-      // Store logged-in customer's ID
+      // Compatibility only. The session cookie authenticates requests.
       localStorage.setItem("customerId", customer.id);
-
-      // Notify App that login was successful
-      if (onLogin) {
-        onLogin(customer);
-      }
-
+      onLogin?.(customer);
     } catch (err) {
-      console.error("LOGIN ERROR:", err);
+      console.error("AUTHENTICATION ERROR:", err, err.response?.data);
 
-      if (err.response) {
-        console.error("Backend status:", err.response.status);
-        console.error("Backend data:", err.response.data);
+      const backendMessage = err.response?.data?.message;
+
+      if (backendMessage === "Email already registered") {
+        setError("An account with this email already exists.");
+      } else if (err.response?.status === 401) {
+        setError("Invalid email or password.");
+      } else if (err.response?.status === 403) {
+        setError(
+          "Security verification failed. Refresh the page and try again."
+        );
+      } else if (err.response?.status === 400) {
+        setError(
+          backendMessage || "Please check your details and try again."
+        );
+      } else {
+        setError(
+          mode === "signup"
+            ? "Unable to create your account. Please try again."
+            : err.message ||
+              "Unable to log in. Check your connection and try again."
+        );
       }
-
-      setError("Invalid email or passkey.");
     } finally {
       setLoading(false);
     }
@@ -48,65 +97,119 @@ export default function Login({ onLogin }) {
 
   return (
     <div className="login-page">
-
       <div className="login-container">
-
         <h1 className="login-title">
-          Welcome Back
+          {mode === "login" ? "Welcome Back" : "Create Account"}
         </h1>
 
         <p className="login-subtitle">
-          Login to access your VogueIn profile
+          {mode === "login"
+            ? "Login to access your VogueIn profile"
+            : "Join VogueIn and start shopping"}
         </p>
 
-        <form className="login-form" onSubmit={handleLogin}>
+        <form className="login-form" onSubmit={handleSubmit}>
+          {mode === "signup" && (
+            <div className="form-group">
+              <label htmlFor="signup-name">Full Name</label>
+              <input
+                id="signup-name"
+                type="text"
+                autoComplete="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your full name"
+                required
+                disabled={loading}
+              />
+            </div>
+          )}
 
-          {/* Email */}
           <div className="form-group">
-            <label>Email</label>
-
+            <label htmlFor="login-email">Email</label>
             <input
+              id="login-email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               required
+              disabled={loading}
             />
           </div>
 
-          {/* Passkey */}
           <div className="form-group">
-            <label>Passkey</label>
-
+            <label htmlFor="login-password">Password</label>
             <input
+              id="login-password"
               type="password"
-              value={passkey}
-              onChange={(e) => setPasskey(e.target.value)}
-              placeholder="Enter your passkey"
+              autoComplete={
+                mode === "login" ? "current-password" : "new-password"
+              }
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              minLength={8}
               required
+              disabled={loading}
             />
           </div>
 
-          {/* Error */}
+          {mode === "signup" && (
+            <div className="form-group">
+              <label htmlFor="confirm-password">Confirm Password</label>
+              <input
+                id="confirm-password"
+                type="password"
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter your password"
+                minLength={8}
+                required
+                disabled={loading}
+              />
+            </div>
+          )}
+
           {error && (
-            <div className="login-error">
+            <div className="login-error" role="alert">
               {error}
             </div>
           )}
 
-          {/* Login */}
-          <button
-            type="submit"
-            className="login-btn"
-            disabled={loading}
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
+          {success && (
+            <p className="signup-success" role="status">
+              {success}
+            </p>
+          )}
 
+          <button className="login-btn" type="submit" disabled={loading}>
+            {loading
+              ? "Please wait..."
+              : mode === "login"
+                ? "Login"
+                : "Create Account"}
+          </button>
         </form>
 
+        <p className="auth-switch">
+          {mode === "login"
+            ? "Don't have an account?"
+            : "Already have an account?"}{" "}
+          <button
+            type="button"
+            className="auth-switch-btn"
+            onClick={() =>
+              switchMode(mode === "login" ? "signup" : "login")
+            }
+            disabled={loading}
+          >
+            {mode === "login" ? "Sign up" : "Login"}
+          </button>
+        </p>
       </div>
-
     </div>
   );
 }

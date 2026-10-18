@@ -211,25 +211,27 @@ export default function ProductDetail({
         ================================================= */}
 
         <div className="detail-img-wrap">
-
-
-          <span className="detail-emoji">
-
-            {product.emoji}
-
-          </span>
-
-
-          {product.badge && (
-
-            <span className="detail-badge">
-
-              {product.badge}
-
+          {product.imageUrl ? (
+            <img
+              className="detail-product-image"
+              src={product.imageUrl}
+              alt={product.name || "Product"}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          ) : (
+            <span className="detail-emoji">
+              {product.emoji || "👕"}
             </span>
-
           )}
 
+          {product.badge && (
+            <span className="detail-badge">
+              {product.badge}
+            </span>
+          )}
         </div>
 
 
