@@ -58,23 +58,28 @@ export default function Profile({ onLogout }) {
           state: customer.state ?? "",
           pincode: customer.pincode ?? "",
         });
-      } catch (err) {
-        console.error(
-          "Failed to restore customer profile:",
-          err
-        );
 
-        if (!cancelled) {
-          setCustomerId(null);
-          setFormData(emptyProfile);
-          setError(
-            err.response?.status === 401
-              ? "Your session has expired. Please log in again."
-              : err.response?.data?.message ||
-                "Could not load your profile. Please try again."
-          );
+        } catch (err) {
+          const status = err.response?.status;
+
+          if (!cancelled) {
+            setCustomerId(null);
+            setFormData(emptyProfile);
+
+            if (status === 401 || status === 403) {
+              // No valid authenticated session.
+              localStorage.removeItem("customerId");
+              setError("Please log in to view your profile.");
+            } else {
+              console.error("Failed to restore customer profile:", err);
+              setError(
+                err.response?.data?.message ||
+                  "Could not load your profile. Please try again."
+              );
+            }
+          }
         }
-      } finally {
+ finally {
         if (!cancelled) {
           setLoading(false);
         }

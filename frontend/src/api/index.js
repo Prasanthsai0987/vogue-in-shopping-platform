@@ -207,4 +207,14 @@ export const verifyPayment = (paymentId, paymentData) =>
 export const fetchPaymentStatus = (paymentId) =>
   API.get(`/payments/${paymentId}/status`);
 
+
+
+
+// ── Password Reset ──────────────────────────────────────
+export const forgotPassword = (email) =>
+  API.post("/customers/forgot-password", { email });
+
+export const resetPassword = (token, newPassword) =>
+  API.post("/customers/reset-password", { token, newPassword });
+
 export default API;

@@ -12,8 +12,8 @@ import java.util.List;
 @CrossOrigin(origins = {
         "http://localhost:5173",
         "http://localhost:3000",
-        "https://vogue-in-shopping-platform-59hh92uvy-prasanthsai0987s-projects.vercel.app",
-        "https://vogue-in-shopping-platform-two.vercel.app"
+        "https://vogue-in-shopping-platform-two.vercel.app",
+        "https://vogue-in-shopping-platform-59hh92uvy-prasanthsai0987s-projects.vercel.app"
 })
 public class ProductController {
 
@@ -23,65 +23,22 @@ public class ProductController {
         this.service = service;
     }
 
-    // GET /api/products
-    // GET /api/products?category=Dresses
     @GetMapping
     public ResponseEntity<List<Product>> list(
             @RequestParam(required = false) String category) {
 
-        List<Product> result =
-                (category != null && !category.isBlank())
+        List<Product> products =
+                category != null && !category.isBlank()
                         ? service.getByCategory(category)
                         : service.getAll();
 
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(products);
     }
 
-    // GET /api/products/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<Product> get(
-            @PathVariable String id) {
-
+    public ResponseEntity<Product> get(@PathVariable String id) {
         return service.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
-    }
-
-    // POST /api/products
-    @PostMapping
-    public ResponseEntity<Product> create(
-            @RequestBody Product product) {
-
-        return ResponseEntity.ok(
-                service.save(product)
-        );
-    }
-
-    // PUT /api/products/{id}
-    @PutMapping("/{id}")
-    public ResponseEntity<Product> update(
-            @PathVariable String id,
-            @RequestBody Product updated) {
-
-        return service.getById(id)
-                .map(existing -> {
-
-                    updated.setId(id);
-
-                    return ResponseEntity.ok(
-                            service.save(updated)
-                    );
-                })
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    // DELETE /api/products/{id}
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(
-            @PathVariable String id) {
-
-        service.delete(id);
-
-        return ResponseEntity.noContent().build();
     }
 }

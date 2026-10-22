@@ -1,3 +1,4 @@
+
 package com.voguein.repository;
 
 import com.voguein.model.Product;
@@ -10,6 +11,8 @@ import java.util.List;
 public interface ProductRepository extends MongoRepository<Product, String> {
 
     List<Product> findByCategory(String category);
+
+    List<Product> findByCategoryIgnoreCase(String category);
 
     List<Product> findByBrandIgnoreCase(String brand);
 }

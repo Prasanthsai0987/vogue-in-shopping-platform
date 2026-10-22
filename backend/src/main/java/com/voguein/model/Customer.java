@@ -1,5 +1,7 @@
+
 package com.voguein.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -16,20 +18,25 @@ public class Customer {
     private String city;
     private String state;
     private String pincode;
+
+    // Legacy field. Do not use it for authentication.
+    @JsonIgnore
     private String passkey;
 
+    @JsonIgnore
+    private String passwordHash;
 
     public Customer() {
     }
 
-    public Customer(String name,
-                    String email,
-                    String phone,
-                    String shippingAddress,
-                    String city,
-                    String state,
-                    String pincode) {
-
+    public Customer(
+            String name,
+            String email,
+            String phone,
+            String shippingAddress,
+            String city,
+            String state,
+            String pincode) {
         this.name = name;
         this.email = email;
         this.phone = phone;
@@ -39,74 +46,41 @@ public class Customer {
         this.pincode = pincode;
     }
 
-    public String getId() {
-        return id;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getName() {
-        return name;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getShippingAddress() {
-        return shippingAddress;
-    }
-
+    public String getShippingAddress() { return shippingAddress; }
     public void setShippingAddress(String shippingAddress) {
         this.shippingAddress = shippingAddress;
     }
 
-    public String getCity() {
-        return city;
-    }
+    public String getCity() { return city; }
+    public void setCity(String city) { this.city = city; }
 
-    public void setCity(String city) {
-        this.city = city;
-    }
+    public String getState() { return state; }
+    public void setState(String state) { this.state = state; }
 
-    public String getState() {
-        return state;
-    }
+    public String getPincode() { return pincode; }
+    public void setPincode(String pincode) { this.pincode = pincode; }
 
-    public void setState(String state) {
-        this.state = state;
-    }
+    @JsonIgnore
+    public String getPasskey() { return passkey; }
 
-    public String getPincode() {
-        return pincode;
-    }
+    public void setPasskey(String passkey) { this.passkey = passkey; }
 
-    public void setPincode(String pincode) {
-        this.pincode = pincode;
-    }
-    public String getPasskey() {
-        return passkey;
-    }
+    @JsonIgnore
+    public String getPasswordHash() { return passwordHash; }
 
-    public void setPasskey(String passkey) {
-        this.passkey=passkey ;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 }

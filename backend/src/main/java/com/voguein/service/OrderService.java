@@ -237,5 +237,16 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
+
+    public boolean isOrderOwnedByCustomer(
+            String orderId,
+            String customerId) {
+
+        return orderRepo.findById(orderId)
+                .map(order ->
+                        customerId.equals(order.getCustomerId()))
+                .orElse(false);
+    }
+
 }
 

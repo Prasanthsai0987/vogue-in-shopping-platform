@@ -1,12 +1,12 @@
+
 package com.voguein.service;
 
+import com.voguein.dto.RegisterCustomerRequest;
 import com.voguein.model.Customer;
-import com.voguein.model.CustomerLoginRequest;
 import com.voguein.repository.CustomerRepository;
-import org.springframework.http.ResponseEntity;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Optional;
 
@@ -14,77 +14,126 @@ import java.util.Optional;
 public class CustomerService {
 
     private final CustomerRepository customerRepo;
+    private final PasswordEncoder passwordEncoder;
 
-    public CustomerService(CustomerRepository customerRepo) {
+    public CustomerService(
+            CustomerRepository customerRepo,
+            PasswordEncoder passwordEncoder) {
         this.customerRepo = customerRepo;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    // Create new customer
-    public Customer createCustomer(Customer customer) {
+    // Register a new customer.
+    // Only name, email, and password are required.
+    public Customer createCustomer(RegisterCustomerRequest request) {
 
-        if (customerRepo.findByEmail(customer.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already registered");
+        if (request.name() == null || request.name().isBlank()) {
+            throw new IllegalArgumentException("Name is required");
         }
+
+        if (request.email() == null || request.email().isBlank()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+
+        if (request.password() == null || request.password().isBlank()) {
+            throw new IllegalArgumentException("Password is required");
+        }
+
+        String name = request.name().trim();
+        String email = request.email().trim().toLowerCase();
+
+        if (customerRepo.existsByEmail(email)) {
+            throw new IllegalArgumentException(
+                    "Email already registered"
+            );
+        }
+
+        Customer customer = new Customer();
+        customer.setName(name);
+        customer.setEmail(email);
+        customer.setPasswordHash(
+                passwordEncoder.encode(request.password())
+        );
+
+        // Profile details are optional during signup.
+        customer.setPhone(request.phone());
+        customer.setShippingAddress(request.shippingAddress());
+        customer.setCity(request.city());
+        customer.setState(request.state());
+        customer.setPincode(request.pincode());
 
         return customerRepo.save(customer);
     }
 
-    // Get customer by ID
+    // Find customer by ID.
     public Optional<Customer> getCustomer(String id) {
         return customerRepo.findById(id);
     }
 
-    // Get customer by email
+    // Find customer by email.
     public Optional<Customer> getCustomerByEmail(String email) {
-        return customerRepo.findByEmail(email);
+        if (email == null || email.isBlank()) {
+            return Optional.empty();
+        }
+
+        return customerRepo.findByEmail(
+                email.trim().toLowerCase()
+        );
     }
 
-    // Update existing customer
-    public Customer updateCustomer(String id, Customer updatedCustomer) {
+    // Update profile as many times as needed.
+    // Only non-null fields are changed.
+    public Customer updateCustomer(
+            String id,
+            Customer updatedCustomer) {
 
         Customer customer = customerRepo.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Customer not found: " + id)
+                        new IllegalArgumentException("Customer not found")
                 );
 
-        customer.setName(updatedCustomer.getName());
-        customer.setEmail(updatedCustomer.getEmail());
-        customer.setPhone(updatedCustomer.getPhone());
-        customer.setShippingAddress(updatedCustomer.getShippingAddress());
-        customer.setCity(updatedCustomer.getCity());
-        customer.setState(updatedCustomer.getState());
-        customer.setPincode(updatedCustomer.getPincode());
+        if (updatedCustomer.getName() != null) {
+            if (updatedCustomer.getName().isBlank()) {
+                throw new IllegalArgumentException(
+                        "Name cannot be blank"
+                );
+            }
 
+            customer.setName(updatedCustomer.getName().trim());
+        }
+
+        if (updatedCustomer.getPhone() != null) {
+            customer.setPhone(updatedCustomer.getPhone());
+        }
+
+        if (updatedCustomer.getShippingAddress() != null) {
+            customer.setShippingAddress(
+                    updatedCustomer.getShippingAddress()
+            );
+        }
+
+        if (updatedCustomer.getCity() != null) {
+            customer.setCity(updatedCustomer.getCity());
+        }
+
+        if (updatedCustomer.getState() != null) {
+            customer.setState(updatedCustomer.getState());
+        }
+
+        if (updatedCustomer.getPincode() != null) {
+            customer.setPincode(updatedCustomer.getPincode());
+        }
+
+        // Email and password cannot be changed through this method.
         return customerRepo.save(customer);
     }
 
-    // Delete customer
+    // Delete customer.
     public void deleteCustomer(String id) {
-
         if (!customerRepo.existsById(id)) {
-            throw new RuntimeException(
-                    "Customer not found: " + id
-            );
+            throw new IllegalArgumentException("Customer not found");
         }
 
         customerRepo.deleteById(id);
     }
-
-    @PostMapping("/login")
-    public ResponseEntity<Customer> login(
-            @RequestBody CustomerLoginRequest request) {
-
-        return customerRepo
-                .findByEmailAndPasskey(
-                        request.getEmail(),
-                        request.getPasskey()
-                )
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    public Optional<Customer> loginCustomer(String email, String passkey) {
-        return customerRepo.findByEmailAndPasskey(email, passkey);
-    }
-
 }

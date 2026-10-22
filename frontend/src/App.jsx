@@ -8,30 +8,48 @@ import Payment from "./pages/Payment";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Orders from "./pages/Orders";
+import Admin from "./pages/Admin";
 
 import Navbar from "./components/Navbar";
 import { CartProvider } from "./pages/CartContext";
 import { getCurrentCustomer, logoutCustomer } from "./api";
-import Admin from "./pages/Admin";
 
 import "./styles/global.css";
 
-export default function App() {
-  const getPageFromUrl = () => {
-  const path = window.location.pathname.replace(/\/+$/, "");
+function getPageFromUrl() {
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
 
   if (path === "/admin") return "admin";
+  if (path === "/reset-password") return "reset-password";
+  if (path === "/forgot-password") return "forgot-password";
+  if (path === "/login") return "login";
 
   return "listing";
-};
+}
 
-const [page, setPage] = useState(getPageFromUrl);
+export default function App() {
+  const [page, setPage] = useState(getPageFromUrl);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [completedOrderRef, setCompletedOrderRef] = useState(null);
   const [customer, setCustomer] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [logoutError, setLogoutError] = useState("");
+
+  // Support direct URLs and browser back/forward navigation.
+  useEffect(() => {
+    const handlePopState = () => {
+      setPage(getPageFromUrl());
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
 
   // Restore the authenticated customer after refresh.
   useEffect(() => {
@@ -43,35 +61,35 @@ const [page, setPage] = useState(getPageFromUrl);
         const currentCustomer = response?.data;
 
         if (!currentCustomer?.id) {
-          throw new Error("Authenticated customer details were not returned.");
+          throw new Error(
+            "Authenticated customer details were not returned."
+          );
         }
 
         if (!cancelled) {
           setCustomer(currentCustomer);
-
-          // Compatibility for existing cart/profile components.
-          localStorage.setItem("customerId", currentCustomer.id);
+          localStorage.setItem(
+            "customerId",
+            currentCustomer.id
+          );
         }
-      
-    } catch (error) {
-      if (!cancelled) {
-        setCustomer(null);
+      } catch (error) {
+        if (!cancelled) {
+          setCustomer(null);
 
-        const status = error.response?.status;
+          const status = error.response?.status;
 
-        if (status === 401 || status === 403) {
-          // Session is missing, expired, or not accepted.
-          localStorage.removeItem("customerId");
-        } else {
-          console.error("SESSION RESTORE ERROR:", error);
+          if (status === 401 || status === 403) {
+            localStorage.removeItem("customerId");
+          } else {
+            console.error("SESSION RESTORE ERROR:", error);
+          }
+        }
+      } finally {
+        if (!cancelled) {
+          setAuthLoading(false);
         }
       }
-    } finally {
-      if (!cancelled) {
-        setAuthLoading(false);
-      }
-    }
-
     };
 
     restoreSession();
@@ -88,9 +106,21 @@ const [page, setPage] = useState(getPageFromUrl);
 
     setPage(to);
 
-    const path = to === "admin" ? "/admin" : "/";
-    window.history.pushState({}, "", path);
+    let path = "/";
 
+    if (to === "admin") {
+      path = "/admin";
+    } else if (to === "login") {
+      path = "/login";
+    } else if (to === "forgot-password") {
+      path = "/forgot-password";
+    } else if (to === "reset-password") {
+      path = "/reset-password";
+    } else if (to === "listing") {
+      path = "/";
+    }
+
+    window.history.pushState({}, "", path);
     window.scrollTo(0, 0);
   };
 
@@ -100,7 +130,6 @@ const [page, setPage] = useState(getPageFromUrl);
     navigate("profile");
   };
 
-  
   const handleLogout = async () => {
     setLogoutError("");
 
@@ -112,7 +141,6 @@ const [page, setPage] = useState(getPageFromUrl);
       navigate("login");
     } catch (error) {
       console.error("LOGOUT ERROR:", error);
-
       setLogoutError("Logout failed. Please try again.");
       throw error;
     }
@@ -141,10 +169,32 @@ const [page, setPage] = useState(getPageFromUrl);
             </p>
           )}
 
+          {/* Login and Signup */}
           {page === "login" && (
-            <Login onLogin={handleLogin} />
+            <Login
+              key="login"
+              onLogin={handleLogin}
+              onNavigate={navigate}
+            />
           )}
 
+          {/* Forgot Password */}
+          {page === "forgot-password" && (
+            <ForgotPassword
+              key="forgot-password"
+              onNavigate={navigate}
+            />
+          )}
+
+          {/* Reset Password */}
+          {page === "reset-password" && (
+            <ResetPassword
+              key="reset-password"
+              onNavigate={navigate}
+            />
+          )}
+
+          {/* Product Listing */}
           {page === "listing" && (
             <ProductListing
               onProductClick={(product) =>
@@ -153,6 +203,7 @@ const [page, setPage] = useState(getPageFromUrl);
             />
           )}
 
+          {/* Product Details */}
           {page === "detail" && (
             <ProductDetail
               product={selectedProduct}
@@ -162,6 +213,7 @@ const [page, setPage] = useState(getPageFromUrl);
             />
           )}
 
+          {/* Cart */}
           {page === "cart" && (
             <Cart
               onBack={() => navigate("listing")}
@@ -169,6 +221,7 @@ const [page, setPage] = useState(getPageFromUrl);
             />
           )}
 
+          {/* Payment */}
           {page === "payment" && (
             <Payment
               onBack={() => navigate("cart")}
@@ -179,6 +232,7 @@ const [page, setPage] = useState(getPageFromUrl);
             />
           )}
 
+          {/* Payment Success */}
           {page === "success" && (
             <PaymentSuccess
               orderRef={completedOrderRef}
@@ -186,6 +240,7 @@ const [page, setPage] = useState(getPageFromUrl);
             />
           )}
 
+          {/* Customer Profile */}
           {page === "profile" && (
             authLoading ? (
               <div className="profile-page">
@@ -196,19 +251,23 @@ const [page, setPage] = useState(getPageFromUrl);
             ) : customer ? (
               <Profile onLogout={handleLogout} />
             ) : (
-              <Login onLogin={handleLogin} />
+              <Login
+                key="profile-login"
+                onLogin={handleLogin}
+                onNavigate={navigate}
+              />
             )
           )}
 
+          {/* Orders */}
           {page === "orders" && (
             <Orders
               onLoginRequired={() => navigate("login")}
             />
           )}
 
-          {page === "admin" && (
-            <Admin />
-          )}
+          {/* Admin */}
+          {page === "admin" && <Admin />}
         </main>
       </div>
     </CartProvider>

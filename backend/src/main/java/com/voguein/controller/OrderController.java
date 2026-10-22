@@ -1,123 +1,141 @@
+
 package com.voguein.controller;
 
 import com.voguein.dto.Dtos.*;
+import com.voguein.model.Customer;
+import com.voguein.repository.CustomerRepository;
 import com.voguein.service.OrderService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(
-        origins = {
-                "http://localhost:5173",
-                "http://localhost:3000",
-                "https://vogue-in-shopping-platform-59hh92uvy-prasanthsai0987s-projects.vercel.app",
-                "https://vogue-in-shopping-platform-two.vercel.app"
-        },
-        methods = {
-                RequestMethod.GET,
-                RequestMethod.POST,
-                RequestMethod.PUT,
-                RequestMethod.OPTIONS
-        },
-        allowedHeaders = "*"
-)
 public class OrderController {
 
     private final OrderService service;
+    private final CustomerRepository customerRepository;
 
-    public OrderController(OrderService service) {
+    public OrderController(
+            OrderService service,
+            CustomerRepository customerRepository) {
         this.service = service;
+        this.customerRepository = customerRepository;
     }
 
-    // =====================================================
-    // CREATE ORDER
-    // POST /api/orders
-    // =====================================================
+    private Customer currentCustomer(Authentication authentication) {
+        return customerRepository.findByEmail(authentication.getName())
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Authenticated customer not found"
+                        ));
+    }
+
+    private boolean isAdmin(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority ->
+                        "ROLE_ADMIN".equals(authority.getAuthority()));
+    }
 
     @PostMapping
-    public ResponseEntity<OrderResponse> create(
-            @RequestBody CreateOrderRequest req) {
+    public ResponseEntity<?> create(
+            @RequestBody CreateOrderRequest request,
+            Authentication authentication) {
 
-        return ResponseEntity.ok(
-                service.createOrder(req)
-        );
+        Customer customer = currentCustomer(authentication);
+
+        if (request.getCustomerId() == null
+                || !request.getCustomerId().equals(customer.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Invalid customer ID"));
+        }
+
+        return ResponseEntity.ok(service.createOrder(request));
     }
-
-
-    // =====================================================
-    // GET ORDERS BY CUSTOMER
-    // GET /api/orders/customer/{customerId}
-    // =====================================================
 
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<OrderResponse>> getOrdersByCustomer(
-            @PathVariable String customerId) {
+    public ResponseEntity<?> getOrdersByCustomer(
+            @PathVariable String customerId,
+            Authentication authentication) {
 
-        return ResponseEntity.ok(
-                service.getOrdersByCustomerId(customerId)
-        );
+        Customer customer = currentCustomer(authentication);
+
+        if (!customer.getId().equals(customerId)
+                && !isAdmin(authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Access denied"));
+        }
+
+        List<OrderResponse> orders =
+                service.getOrdersByCustomerId(customerId);
+
+        return ResponseEntity.ok(orders);
     }
-
-
-    // =====================================================
-    // GET SINGLE ORDER
-    // GET /api/orders/{id}
-    // =====================================================
 
     @GetMapping("/{id}")
-    public ResponseEntity<OrderResponse> get(
-            @PathVariable String id) {
+    public ResponseEntity<?> get(
+            @PathVariable String id,
+            Authentication authentication) {
+
+        Customer customer = currentCustomer(authentication);
+
+        if (!isAdmin(authentication)
+                && !service.isOrderOwnedByCustomer(
+                id, customer.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Access denied"));
+        }
 
         return service.getOrder(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
-
-
-    // =====================================================
-    // SHIP ORDER
-    // PUT /api/orders/{id}/ship
-    // =====================================================
 
     @PutMapping("/{id}/ship")
-    public ResponseEntity<OrderResponse> ship(
-            @PathVariable String id) {
+    public ResponseEntity<?> ship(
+            @PathVariable String id,
+            Authentication authentication) {
 
-        return ResponseEntity.ok(
-                service.shipOrder(id)
-        );
+        if (!isAdmin(authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Administrator access required"));
+        }
+
+        return ResponseEntity.ok(service.shipOrder(id));
     }
-
-
-    // =====================================================
-    // DELIVER ORDER
-    // PUT /api/orders/{id}/deliver
-    // =====================================================
 
     @PutMapping("/{id}/deliver")
-    public ResponseEntity<OrderResponse> deliver(
-            @PathVariable String id) {
+    public ResponseEntity<?> deliver(
+            @PathVariable String id,
+            Authentication authentication) {
 
-        return ResponseEntity.ok(
-                service.deliverOrder(id)
-        );
+        if (!isAdmin(authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Administrator access required"));
+        }
+
+        return ResponseEntity.ok(service.deliverOrder(id));
     }
 
-
-    // =====================================================
-    // CANCEL ORDER
-    // PUT /api/orders/{id}/cancel
-    // =====================================================
-
     @PutMapping("/{id}/cancel")
-    public ResponseEntity<OrderResponse> cancel(
-            @PathVariable String id) {
+    public ResponseEntity<?> cancel(
+            @PathVariable String id,
+            Authentication authentication) {
 
-        return ResponseEntity.ok(
-                service.cancelOrder(id)
-        );
+        Customer customer = currentCustomer(authentication);
+
+        if (!isAdmin(authentication)
+                && !service.isOrderOwnedByCustomer(
+                id, customer.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Access denied"));
+        }
+
+        return ResponseEntity.ok(service.cancelOrder(id));
     }
 }

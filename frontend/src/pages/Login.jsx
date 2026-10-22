@@ -3,8 +3,12 @@ import { useState } from "react";
 import { loginCustomer, registerCustomer } from "../api";
 import "./Login.css";
 
-export default function Login({ onLogin }) {
-  const [mode, setMode] = useState("login");
+export default function Login({
+  onLogin,
+  initialMode = "login",
+  onNavigate,
+}) {
+  const [mode, setMode] = useState(initialMode);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,11 +53,17 @@ export default function Login({ onLogin }) {
         setPassword("");
         setConfirmPassword("");
         setName("");
-        setSuccess("Account created successfully. Please log in.");
+        setSuccess(
+          "Account created successfully. Please log in."
+        );
         return;
       }
 
-      const response = await loginCustomer(email.trim(), password);
+      const response = await loginCustomer(
+        email.trim(),
+        password
+      );
+
       const customer = response?.data;
 
       if (!customer?.id) {
@@ -62,11 +72,15 @@ export default function Login({ onLogin }) {
         );
       }
 
-      // Compatibility only. The session cookie authenticates requests.
+      // Preserve the existing session-cookie authentication.
       localStorage.setItem("customerId", customer.id);
       onLogin?.(customer);
     } catch (err) {
-      console.error("AUTHENTICATION ERROR:", err, err.response?.data);
+      console.error(
+        "AUTHENTICATION ERROR:",
+        err,
+        err.response?.data
+      );
 
       const backendMessage = err.response?.data?.message;
 
@@ -80,7 +94,8 @@ export default function Login({ onLogin }) {
         );
       } else if (err.response?.status === 400) {
         setError(
-          backendMessage || "Please check your details and try again."
+          backendMessage ||
+            "Please check your details and try again."
         );
       } else {
         setError(
@@ -145,12 +160,15 @@ export default function Login({ onLogin }) {
               id="login-password"
               type="password"
               autoComplete={
-                mode === "login" ? "current-password" : "new-password"
+                mode === "login"
+                  ? "current-password"
+                  : "new-password"
               }
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               minLength={8}
+              maxLength={128}
               required
               disabled={loading}
             />
@@ -158,19 +176,38 @@ export default function Login({ onLogin }) {
 
           {mode === "signup" && (
             <div className="form-group">
-              <label htmlFor="confirm-password">Confirm Password</label>
+              <label htmlFor="confirm-password">
+                Confirm Password
+              </label>
               <input
                 id="confirm-password"
                 type="password"
                 autoComplete="new-password"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) =>
+                  setConfirmPassword(e.target.value)
+                }
                 placeholder="Re-enter your password"
                 minLength={8}
+                maxLength={128}
                 required
                 disabled={loading}
               />
             </div>
+          )}
+
+          {mode === "login" && (
+            <p className="auth-switch">
+              <button
+                type="button"
+                className="auth-switch-btn"
+                onClick={() =>
+                  onNavigate?.("forgot-password")
+                }
+              >
+                Forgot Password?
+              </button>
+            </p>
           )}
 
           {error && (
@@ -185,7 +222,11 @@ export default function Login({ onLogin }) {
             </p>
           )}
 
-          <button className="login-btn" type="submit" disabled={loading}>
+          <button
+            className="login-btn"
+            type="submit"
+            disabled={loading}
+          >
             {loading
               ? "Please wait..."
               : mode === "login"
@@ -202,7 +243,9 @@ export default function Login({ onLogin }) {
             type="button"
             className="auth-switch-btn"
             onClick={() =>
-              switchMode(mode === "login" ? "signup" : "login")
+              switchMode(
+                mode === "login" ? "signup" : "login"
+              )
             }
             disabled={loading}
           >

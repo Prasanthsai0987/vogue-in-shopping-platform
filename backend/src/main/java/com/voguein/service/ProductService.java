@@ -21,10 +21,9 @@ public class ProductService {
     }
 
     public List<Product> getByCategory(String category) {
-        return repo.findByCategory(category);
+        return repo.findByCategoryIgnoreCase(category);
     }
 
-    // Get one product by ID
     public Optional<Product> getById(String id) {
         return repo.findById(id);
     }
